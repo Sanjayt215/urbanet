@@ -49,7 +49,6 @@ RoleBadge IDPasswordOTP🟠 Super AdminCTY-2024-0001password123Click Generate�
 👤 Role Access Matrix
 Each role has a completely different dashboard. Here's the breakdown:
 Feature🟠 Admin🔵 Engineer🔴 Emergency🟢 AnalystPower Grid (all zones)✅❌✅📊 aggPower Grid (Zone 3 only)✅✅✅❌Water Network (Zone 3)✅✅✅📊 aggTraffic Control (write)✅❌✅ emergency❌Traffic (read-only)✅✅✅✅IoT Sensor Hub✅ all✅ Zone 3✅ all📊 publicEmergency Declaration✅❌✅❌User Management✅❌❌❌Full Audit Logs✅❌❌❌Data Export (CSV)✅❌❌✅
-
 📊 = aggregated/anonymized data only
 
 
