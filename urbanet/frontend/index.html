@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URBA·NET — Smart City Security Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/login.css">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<div class="blob1"></div>
+<div class="blob2"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadOverlay">
+  <div class="load-ring"></div>
+  <div class="load-title">AUTHENTICATING</div>
+  <div class="load-steps" id="loadSteps">
+    <div class="lstep" id="ls0"><span class="lstep-icon">○</span> Hashing credentials (bcrypt)</div>
+    <div class="lstep" id="ls1"><span class="lstep-icon">○</span> Verifying JWT signature</div>
+    <div class="lstep" id="ls2"><span class="lstep-icon">○</span> Checking RBAC permissions</div>
+    <div class="lstep" id="ls3"><span class="lstep-icon">○</span> Running geo-fence check</div>
+    <div class="lstep" id="ls4"><span class="lstep-icon">○</span> Computing risk score</div>
+    <div class="lstep" id="ls5"><span class="lstep-icon">○</span> Issuing session token (Redis)</div>
+  </div>
+</div>
+
+<!-- GEO FENCE MODAL -->
+<div class="modal-overlay" id="geoModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">GEO-FENCE VERIFICATION</div>
+      <button class="modal-close" onclick="closeGeoModal()">x</button>
+    </div>
+    <div class="modal-body">
+      <div id="geoMap"></div>
+      <div class="geo-status" id="geoStatus"></div>
+      <div id="geoActionBtn"></div>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">URBA<em>NET</em></div>
+    <div class="header-mid">
+      <div class="sys-pill"><span class="pulse-dot"></span><span id="sysStatus">ALL SYSTEMS OPERATIONAL</span></div>
+      <button class="emergency-global-btn" id="emergGlobalBtn" onclick="toggleEmergency()">
+        <span id="emergIcon">!</span>
+        <span id="emergBtnText">DECLARE EMERGENCY</span>
+      </button>
+    </div>
+    <div class="header-right">
+      <span class="api-badge" id="apiBadge">API: OFFLINE</span>
+      <span id="liveClock"></span>
+    </div>
+  </div>
+
+  <!-- LOGIN VIEW -->
+  <div class="view active" id="loginView">
+    <div class="login-wrap">
+      <div class="login-left">
+        <div class="big-title">SMART<br><span class="c1">CITY</span><br><span class="c2">SECURE</span></div>
+        <p class="sub-desc">Zero-trust security platform with real JWT auth, bcrypt hashing, role-based API protection, geo-fencing, and WebSocket real-time updates.</p>
+        <div class="feature-pills">
+          <div class="fpill">JWT Auth</div>
+          <div class="fpill">bcrypt</div>
+          <div class="fpill">Geo-Fence</div>
+          <div class="fpill">WebSocket</div>
+          <div class="fpill">RBAC</div>
+          <div class="fpill">Rate Limit</div>
+          <div class="fpill">Audit Log</div>
+        </div>
+
+        <!-- API Status Panel -->
+        <div class="api-status-panel" id="apiStatusPanel">
+          <div class="asp-label">// BACKEND API STATUS</div>
+          <div class="asp-row"><span class="asp-dot online"></span><span class="asp-url">POST /api/auth/login</span><span class="asp-badge green">READY</span></div>
+          <div class="asp-row"><span class="asp-dot online"></span><span class="asp-url">GET /api/infra/power</span><span class="asp-badge green">PROTECTED</span></div>
+          <div class="asp-row"><span class="asp-dot online"></span><span class="asp-url">POST /api/emergency/declare</span><span class="asp-badge orange">ROLE-GATED</span></div>
+          <div class="asp-row"><span class="asp-dot online"></span><span class="asp-url">WebSocket :5000</span><span class="asp-badge cyan">LIVE</span></div>
+        </div>
+
+        <!-- SVG City -->
+        <svg class="skyline" viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="100" width="50" height="80" fill="none" stroke="#00d4ff" stroke-width="1" opacity=".5"/>
+          <rect x="88" y="65" width="60" height="115" fill="none" stroke="#00d4ff" stroke-width="1" opacity=".6"/>
+          <rect x="156" y="42" width="75" height="138" fill="none" stroke="#00d4ff" stroke-width="1.2" opacity=".7"/>
+          <rect x="240" y="80" width="48" height="100" fill="none" stroke="#00d4ff" stroke-width=".8" opacity=".5"/>
+          <rect x="297" y="50" width="62" height="130" fill="none" stroke="#00d4ff" stroke-width="1" opacity=".6"/>
+          <rect x="368" y="22" width="88" height="158" fill="none" stroke="#00d4ff" stroke-width="1.5" opacity=".8"/>
+          <rect x="465" y="70" width="44" height="110" fill="none" stroke="#00d4ff" stroke-width=".8" opacity=".5"/>
+          <rect x="518" y="88" width="52" height="92" fill="none" stroke="#00d4ff" stroke-width="1" opacity=".5"/>
+          <rect x="579" y="55" width="68" height="125" fill="none" stroke="#00d4ff" stroke-width="1.1" opacity=".6"/>
+          <rect x="656" y="108" width="38" height="72" fill="none" stroke="#00d4ff" stroke-width=".7" opacity=".4"/>
+          <rect x="703" y="75" width="54" height="105" fill="none" stroke="#00d4ff" stroke-width="1" opacity=".5"/>
+          <rect x="768" y="92" width="42" height="88" fill="none" stroke="#00d4ff" stroke-width=".8" opacity=".4"/>
+          <line x1="0" y1="180" x2="900" y2="180" stroke="#00d4ff" stroke-width=".5" opacity=".3"/>
+          <rect x="96" y="74" width="10" height="8" fill="#00d4ff" opacity=".3"/>
+          <rect x="112" y="74" width="10" height="8" fill="#ffc930" opacity=".5"/>
+          <rect x="164" y="52" width="12" height="9" fill="#00d4ff" opacity=".4"/>
+          <rect x="182" y="52" width="12" height="9" fill="#ffc930" opacity=".5"/>
+          <rect x="376" y="32" width="14" height="10" fill="#00d4ff" opacity=".5"/>
+          <rect x="396" y="32" width="14" height="10" fill="#ffc930" opacity=".6"/>
+          <rect x="416" y="32" width="14" height="10" fill="#00d4ff" opacity=".35"/>
+          <circle cx="411" cy="20" r="4" fill="#ff7730" opacity=".9"/>
+          <circle cx="613" cy="50" r="3" fill="#ff2255" opacity=".7"/>
+        </svg>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div class="login-right">
+        <div class="login-card-title">SECURE ACCESS</div>
+        <div class="login-card-sub">// Real JWT auth — connect to backend on :5000</div>
+
+        <div class="role-pick-label">// Select Access Role</div>
+        <div class="role-pick">
+          <button class="rpick r-admin active" id="rp-admin" onclick="pickRole('admin')">
+            <span class="rpick-icon">A</span>
+            <span class="rpick-name">Super Admin</span>
+            <span class="rpick-sub">City CTO / IT Head</span>
+            <span class="rpick-badge">L5 FULL</span>
+          </button>
+          <button class="rpick r-engineer" id="rp-engineer" onclick="pickRole('engineer')">
+            <span class="rpick-icon">E</span>
+            <span class="rpick-name">Infra Engineer</span>
+            <span class="rpick-sub">Field Technician</span>
+            <span class="rpick-badge">L3 ZONE</span>
+          </button>
+          <button class="rpick r-emergency" id="rp-emergency" onclick="pickRole('emergency')">
+            <span class="rpick-icon">!</span>
+            <span class="rpick-name">Emergency</span>
+            <span class="rpick-sub">Police / Fire / EMS</span>
+            <span class="rpick-badge">L4 INCIDENT</span>
+          </button>
+          <button class="rpick r-analyst" id="rp-analyst" onclick="pickRole('analyst')">
+            <span class="rpick-icon">D</span>
+            <span class="rpick-name">Data Analyst</span>
+            <span class="rpick-sub">City Planner</span>
+            <span class="rpick-badge">L2 READ</span>
+          </button>
+        </div>
+
+        <div class="fgroup">
+          <label>Employee Badge ID</label>
+          <input type="text" id="fBadge" placeholder="e.g. CTY-2024-0001" />
+        </div>
+        <div class="fgroup">
+          <label>Password</label>
+          <input type="password" id="fPass" placeholder="Password@123" />
+        </div>
+        <div class="fgroup">
+          <label>MFA / OTP</label>
+          <div class="otp-row">
+            <input type="text" id="fOTP" placeholder="Click Generate" maxlength="6"/>
+            <button class="otp-gen" onclick="generateOTP()">GENERATE</button>
+          </div>
+        </div>
+
+        <!-- Risk Meter -->
+        <div class="risk-meter-wrap">
+          <div class="rm-top">
+            <span class="rm-label">// SESSION RISK SCORE</span>
+            <span class="rm-score" id="riskScore">--</span>
+          </div>
+          <div class="rm-track"><div class="rm-fill" id="riskFill" style="width:0%"></div></div>
+          <div class="rm-factors" id="riskFactors"></div>
+        </div>
+
+        <button class="login-btn r-admin" id="loginBtn" onclick="attemptLogin()">AUTHENTICATE ACCESS</button>
+        <div class="sec-note">bcrypt + JWT RS256 + Redis session + TLS 1.3 + Zero-trust</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <div class="view" id="dashView">
+    <div class="dash-layout">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="sb-user">
+          <div class="sb-avatar" id="sbAvatar"></div>
+          <div class="sb-name" id="sbName"></div>
+          <div class="sb-role" id="sbRole"></div>
+          <span class="sb-badge" id="sbBadge"></span>
+        </div>
+        <div class="sb-jwt">
+          <div class="jwt-label">// JWT TOKEN</div>
+          <div class="jwt-token" id="jwtPreview"></div>
+        </div>
+        <div class="sb-session">
+          <div class="session-timer-label">// SESSION EXPIRES IN</div>
+          <div class="session-timer" id="sessionTimer">03:59:59</div>
+          <div class="session-bar-track"><div class="session-bar-fill" id="sessionBar" style="width:100%"></div></div>
+        </div>
+        <div class="sb-nav" id="sbNav"></div>
+        <div class="sb-footer">
+          <button class="logout-btn" onclick="doLogout()">Terminate Session</button>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="dash-main">
+        <div class="dash-topbar">
+          <div class="dash-greeting">WELCOME, <span id="dashFirstName"></span></div>
+          <div class="dash-actions-row">
+            <button class="dash-action" onclick="loadAuditLogs()">Export Logs</button>
+            <button class="dash-action" onclick="showGeoModal(true)">View Geo-Fence</button>
+            <button class="dash-action" onclick="testAPICall()">Test API</button>
+          </div>
+        </div>
+
+        <!-- Emergency Banner -->
+        <div class="emergency-banner" id="emergBanner">
+          <div class="eb-icon">!</div>
+          <div class="eb-text">
+            <div class="eb-title">EMERGENCY PROTOCOL ACTIVE</div>
+            <span id="emergMsg">City-wide emergency declared. Elevated permissions active.</span>
+          </div>
+          <button class="eb-dismiss" onclick="deactivateEmergency()">DEACTIVATE</button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row" id="statsRow"></div>
+
+        <!-- API Demo Panel -->
+        <div class="api-demo-panel">
+          <div class="section-title">// LIVE API PROTECTION DEMO</div>
+          <div class="api-demo-grid" id="apiDemoGrid"></div>
+        </div>
+
+        <!-- Geo Map -->
+        <div class="geo-dash-panel">
+          <div class="section-title">// GEO-FENCE STATUS — CITY ZONES</div>
+          <div id="dashGeoMap"></div>
+        </div>
+
+        <!-- Emergency Controls -->
+        <div class="emerg-panel" id="emergPanel" style="display:none">
+          <div class="section-title">// EMERGENCY ZONE CONTROLS</div>
+          <div class="emerg-controls">
+            <button class="ec-btn" id="ez1" onclick="toggleZone(1)">Zone 1 — North District</button>
+            <button class="ec-btn" id="ez2" onclick="toggleZone(2)">Zone 2 — Central Hub</button>
+            <button class="ec-btn" id="ez3" onclick="toggleZone(3)">Zone 3 — South Grid</button>
+          </div>
+        </div>
+
+        <!-- Modules -->
+        <div class="section-title">// INFRASTRUCTURE MODULES</div>
+        <div class="modules-grid" id="modulesGrid"></div>
+
+        <!-- Permissions -->
+        <div class="perms-panel">
+          <div class="section-title">// API PERMISSIONS — CURRENT SESSION</div>
+          <div class="perm-tags" id="permTags"></div>
+        </div>
+
+        <!-- Live Sensor Feed -->
+        <div class="sensor-feed-panel">
+          <div class="section-title">// LIVE SENSOR FEED (WebSocket)</div>
+          <div class="sensor-grid" id="sensorGrid">
+            <div class="sensor-card"><div class="sc-label">Power Load</div><div class="sc-val" id="swPower">-- MW</div></div>
+            <div class="sensor-card"><div class="sc-label">Frequency</div><div class="sc-val" id="swFreq">-- Hz</div></div>
+            <div class="sensor-card"><div class="sc-label">Water Flow</div><div class="sc-val" id="swFlow">-- MLD</div></div>
+            <div class="sensor-card"><div class="sc-label">Congestion</div><div class="sc-val" id="swTraffic">-- %</div></div>
+          </div>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="audit-panel">
+          <div class="section-title">// LIVE AUDIT LOG</div>
+          <div class="audit-list" id="auditList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/map.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
